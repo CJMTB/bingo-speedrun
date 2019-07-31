@@ -1,0 +1,68 @@
+﻿@page
+@{
+    ViewData["Title"] = "Bingo";
+}
+<div id="bingo-login">
+    <form>
+        <div class="form-group">
+            <label for="username-input">Username</label>
+            <input type="text" class="form-control" id="username-input" />
+        </div>
+        <div class="form-group">
+            <label for="room-code-input">Room Code</label>
+            <input type="text" class="form-control" id="room-code-input" placeholder="leave blank for a new room" />
+        </div>
+        <button type="button" class="btn btn-info" id="bingo-login-submit">Play!</button>
+    </form>
+</div>
+<div id="bingo-game" style="display: none">
+    <div class="container" id="bingo-game-info">
+        <div id="room-code-container">Room Code: <span id="room-code"></span></div>
+        <hr>
+        <table id="room-players">
+            <tr><th>Players</th></tr>
+        </table>
+        <hr>
+        <div id="buttons-container">
+            <button type="button" class="btn btn-info" id="room-new-game">New Game</button>
+            <button type="button" class="btn btn-info" id="room-toggle-settings" data-toggle="collapse" data-target="#room-settings" aria-expanded="false">Settings</button>
+        </div>
+        <div id="room-settings" class="collapse">
+            <hr>
+            <textarea class="form-control" rows="5"></textarea>
+        </div>
+
+    </div>
+    <div id="bingo-game-grid">
+        <div id="0" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="1" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="2" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="3" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="4" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="5" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="6" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="7" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="8" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="9" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="10" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="11" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="12" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="13" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="14" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="15" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="16" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="17" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="18" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="19" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="20" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="21" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="22" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="23" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+        <div id="24" class="square"><div class="bingo-tile"><div></div><div></div></div><div class="bingo-text"><span></span></div></div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script src="~/js/bingo.js"></script>
+}
+
