@@ -24,8 +24,11 @@ const connection = new signalR.HubConnectionBuilder()
 	.withUrl("/bingoHub")
 	.build();
 
+connection.on("ReceiveError", function (errorMessage) {
+	$("#bingo-login-error").text(errorMessage).show();
+});
+
 connection.on("ReceiveBoardUpdate", function (tileID, userColour) {
-	console.log("update board: " + tileID + " " + userColour);
 	updateBoard(tileID, userColour);
 });
 
@@ -46,16 +49,29 @@ connection.on("ReceiveFirstJoinRoom", function (roomID, assignedColour, boardJSO
 	}
 
 	$("#bingo-login").hide();
+	$("#bingo-login-error").hide();
 	$("#bingo-game").show();
 
 	renderBoard();
 	textfill(30);
 });
 
+// add user to list when they join
 connection.on("ReceiveOtherJoinRoom", function (playerUsername, playerColour) {
 	var newRow = "<tr style='background-color: " + playerColour + "'><td>" + playerUsername + "</td></tr>";
 	$("#room-players tbody").append(newRow);
 });
+
+// remove user from list when they leave
+connection.on("ReceiveLeaveRoom", function (playerUsername) {
+	$("#room-players tr td").each(function () {
+		if ($(this).text() == playerUsername) {
+			$(this).parent().remove();
+		}
+	});
+});
+
+
 
 // We need an async function in order to use await, but we want this code to run immediately,
 // so we use an "immediately-executed async function"
@@ -70,17 +86,17 @@ connection.on("ReceiveOtherJoinRoom", function (playerUsername, playerColour) {
 
 jQuery(document).ready(function ($) {
 	$("#bingo-login-submit").click(function () {
-		var usernameInput = $.trim($("#username-input").val());
-		var roomIDInput = $.trim($("#room-code-input").val());
+		var username = $.trim($("#username-input").val());
+		var roomID = $.trim($("#room-code-input").val());
 		// new room
-		if (roomIDInput == "") {
-			connection.invoke("SendCreateRoom", usernameInput).catch(function (err) {
+		if (roomID == "") {
+			connection.invoke("SendCreateRoom", username).catch(function (err) {
 				console.error(err.toString());
 			});
 		}
 		// join room
 		else {
-			connection.invoke("SendJoinRoom", usernameInput, roomIDInput).catch(function (err) {
+			connection.invoke("SendJoinRoom", username, roomID).catch(function (err) {
 				console.error(err.toString());
 			});
 		}
@@ -147,8 +163,7 @@ function setColours(tileID, colours) {
 	}
 }
 
-// set bingo tiles with largest text without overflowing
-// incrementally decreases font size until fits
+// incrementally decreases font size until text fits
 function textfill(maxFontSize) {
 	$(".bingo-text > span").each(function () {
 		$(this).css("fontSize", maxFontSize);

@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace BingoSpeedrun.Services
 {
-    public class BingoRoomManager : IBingoRoomManager
+    public class BingoRoomManager
     {
         private const int RoomIDLength = 3;
 
@@ -38,9 +38,9 @@ namespace BingoSpeedrun.Services
             return Rooms[roomID].AddUser(connectionID, username);
         }
 
-        public void RemoveFromRoom(string connectionID, string roomID, string username)
+        public void RemoveFromRoom(string connectionID, string roomID)
         {
-            Rooms[roomID].RemoveUser(connectionID, username);
+            Rooms[roomID].RemoveUser(connectionID);
             // delete room if no users
             if(Rooms[roomID].Users.Count == 0)
             {
@@ -52,7 +52,5 @@ namespace BingoSpeedrun.Services
         {
             return Rooms[roomID].Users;
         }
-
-        
     }
 }

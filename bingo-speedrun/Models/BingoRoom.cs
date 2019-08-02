@@ -37,9 +37,9 @@ namespace BingoSpeedrun.Models
         }
 
         // removes user from room and adds their colour back to the pool
-        public void RemoveUser(string connectionID, string username)
+        public void RemoveUser(string connectionID)
         {
-            _possibleHexColours.Add(Users[username].HexColour);
+            _possibleHexColours.Add(Users[connectionID].HexColour);
             Users.Remove(connectionID);
         }
 

@@ -40,10 +40,23 @@ hr {
 
 #bingo-login {
     margin: 0 auto;
+    margin-bottom: 15px;
     width: 75.5vmin;
     padding: 0.25vmin;
     background-color: #181818;
     color: white;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+#bingo-login-error {
+    margin: 0 auto;
+    width: 75.5vmin;
+    background-color: #cc0000;
+    border-color: #cc0000;
+    color: lightgray;
+    text-align: center;
+    font-weight: bold;
 }
 
 form {

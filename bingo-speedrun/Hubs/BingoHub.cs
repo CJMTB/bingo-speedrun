@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 /* TODO:
- * Remove user when they close website
  * Room settings
  * Cards
+ * Validate user input (eg no blank username)
  */
 
 namespace BingoSpeedrun.Hubs
@@ -17,9 +17,9 @@ namespace BingoSpeedrun.Hubs
 
     public class BingoHub : Hub
     {
-        private IBingoRoomManager _roomManager;
+        private BingoRoomManager _roomManager;
 
-        public BingoHub(IBingoRoomManager roomManager) {
+        public BingoHub(BingoRoomManager roomManager) {
             _roomManager = roomManager;
         }
 
@@ -29,26 +29,30 @@ namespace BingoSpeedrun.Hubs
             string hexColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
             string boardJSON = _roomManager.GetRoom(roomID).Board.ToJSON();
             string usersJSON = _roomManager.GetRoom(roomID).UsersToJSON();
-            Debug.WriteLine("HEX COLOR: " + hexColour);
-            Debug.WriteLine("USERS: " + usersJSON);
             await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", roomID, hexColour, boardJSON, usersJSON);
         }
 
         public async Task SendJoinRoom(string username, string roomID)
         {
-            string hexColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
-            string boardJSON = _roomManager.GetRoom(roomID).Board.ToJSON();
-            string usersJSON = _roomManager.GetRoom(roomID).UsersToJSON();
-            Debug.WriteLine(usersJSON);
-            await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", roomID, hexColour, boardJSON, usersJSON);
-
-            Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
-            foreach (KeyValuePair<string, BingoUser> entry in usersInRoom)
+            try
             {
-                if(Context.ConnectionId != entry.Key)
+                string hexColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
+                string boardJSON = _roomManager.GetRoom(roomID).Board.ToJSON();
+                string usersJSON = _roomManager.GetRoom(roomID).UsersToJSON();
+                await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", roomID, hexColour, boardJSON, usersJSON);
+
+                Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
+                foreach (KeyValuePair<string, BingoUser> entry in usersInRoom)
                 {
-                    await Clients.Client(entry.Key).SendAsync("ReceiveOtherJoinRoom", username, hexColour);
+                    if (Context.ConnectionId != entry.Key)
+                    {
+                        await Clients.Client(entry.Key).SendAsync("ReceiveOtherJoinRoom", username, hexColour);
+                    }
                 }
+            }
+            catch(KeyNotFoundException)
+            {
+                await Clients.Caller.SendAsync("ReceiveError", "Room " + roomID + " not found");
             }
         }
 
@@ -62,6 +66,42 @@ namespace BingoSpeedrun.Hubs
                 await Clients.Client(entry.Key).SendAsync("ReceiveBoardUpdate", tileID, userColour);
             }
             
+        }
+
+        // Remove user from room.
+        // Send all other users a message.
+        // Delete room if no users left.
+        public async override Task OnDisconnectedAsync(Exception exception)
+        {
+            foreach (KeyValuePair<string, BingoRoom> room in _roomManager.Rooms)
+            {
+                if (room.Value.Users.ContainsKey(Context.ConnectionId))
+                {
+                    // room found
+
+                    string roomID = room.Key;
+                    string username = room.Value.Users[Context.ConnectionId].Username;
+
+                    _roomManager.Rooms[roomID].RemoveUser(Context.ConnectionId);
+
+                    if(_roomManager.Rooms[roomID].Users.Count == 0)
+                    {
+                        _roomManager.Rooms.Remove(roomID);
+                    }
+                    else
+                    {
+                        Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
+                        foreach (KeyValuePair<string, BingoUser> users in usersInRoom)
+                        {
+                            await Clients.Client(users.Key).SendAsync("ReceiveLeaveRoom", username);
+
+                        }
+                    }
+                    break;
+                }
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }

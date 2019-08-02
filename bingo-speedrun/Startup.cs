@@ -28,7 +28,7 @@ namespace BingoSpeedrun
 
             services.AddSignalR();
 
-            services.AddSingleton<IBingoRoomManager, BingoRoomManager>();
+            services.AddSingleton<BingoRoomManager, BingoRoomManager>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
