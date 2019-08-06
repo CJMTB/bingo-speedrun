@@ -3,6 +3,8 @@ using BingoSpeedrun.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization.Json;
 
 namespace BingoSpeedrun.Services
 {
@@ -51,6 +53,16 @@ namespace BingoSpeedrun.Services
         public Dictionary<string, BingoUser> GetRoomUsers(string roomID)
         {
             return Rooms[roomID].Users;
+        }
+
+        public string RoomToJSON(string roomID)
+        {
+            MemoryStream stream = new MemoryStream();
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(BingoRoom));
+            ser.WriteObject(stream, Rooms[roomID]);
+            stream.Position = 0;
+            StreamReader streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
         }
     }
 }

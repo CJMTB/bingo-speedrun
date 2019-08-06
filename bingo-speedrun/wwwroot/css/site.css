@@ -67,11 +67,6 @@ form {
     background-color: lightgray;
 }
 
-#bingo-login-submit {
-    background-color: #117a8b;
-    border-color: #117a8b;
-}
-
 #bingo-game {
     margin: 0 auto;
     width: 880px;

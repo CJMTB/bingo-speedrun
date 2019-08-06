@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 /* TODO:
- * Room settings
- * Cards
  * Validate user input (eg no blank username)
+ * Custom JSON to remove connection ID
  */
 
 namespace BingoSpeedrun.Hubs
@@ -26,27 +29,23 @@ namespace BingoSpeedrun.Hubs
         public async Task SendCreateRoom(string username)
         {
             string roomID = _roomManager.CreateRoom();
-            string hexColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
-            string boardJSON = _roomManager.GetRoom(roomID).Board.ToJSON();
-            string usersJSON = _roomManager.GetRoom(roomID).UsersToJSON();
-            await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", roomID, hexColour, boardJSON, usersJSON);
+            string userColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
+            await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", _roomManager.RoomToJSON(roomID), userColour);
         }
 
         public async Task SendJoinRoom(string username, string roomID)
         {
             try
             {
-                string hexColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
-                string boardJSON = _roomManager.GetRoom(roomID).Board.ToJSON();
-                string usersJSON = _roomManager.GetRoom(roomID).UsersToJSON();
-                await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", roomID, hexColour, boardJSON, usersJSON);
+                string userColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
+                await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", _roomManager.RoomToJSON(roomID), userColour);
 
                 Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
                 foreach (KeyValuePair<string, BingoUser> entry in usersInRoom)
                 {
                     if (Context.ConnectionId != entry.Key)
                     {
-                        await Clients.Client(entry.Key).SendAsync("ReceiveOtherJoinRoom", username, hexColour);
+                        await Clients.Client(entry.Key).SendAsync("ReceiveOtherJoinRoom", username, userColour);
                     }
                 }
             }
@@ -65,7 +64,33 @@ namespace BingoSpeedrun.Hubs
             {
                 await Clients.Client(entry.Key).SendAsync("ReceiveBoardUpdate", tileID, userColour);
             }
-            
+        }
+
+        public async Task SendUpdateRoomSettings(string roomID, string roomSettingsJSON)
+        {
+            BingoRoomSettings settings = new BingoRoomSettings();
+            MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(roomSettingsJSON));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(settings.GetType());
+            settings = ser.ReadObject(stream) as BingoRoomSettings;
+            stream.Close();
+
+            _roomManager.GetRoom(roomID).Settings = settings;
+
+            Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
+            foreach (KeyValuePair<string, BingoUser> entry in usersInRoom)
+            {
+                await Clients.Client(entry.Key).SendAsync("ReceiveUpdateRoomSettings", roomSettingsJSON);
+            }
+        }
+
+        public async Task SendResetBoard(string roomID)
+        {
+            BingoRoom room = _roomManager.GetRoom(roomID);
+            room.ResetBoard();
+            foreach (KeyValuePair<string, BingoUser> entry in room.Users)
+            {
+                await Clients.Client(entry.Key).SendAsync("ReceiveResetBoard", room.BoardToJSON());
+            }
         }
 
         // Remove user from room.
@@ -94,7 +119,6 @@ namespace BingoSpeedrun.Hubs
                         foreach (KeyValuePair<string, BingoUser> users in usersInRoom)
                         {
                             await Clients.Client(users.Key).SendAsync("ReceiveLeaveRoom", username);
-
                         }
                     }
                     break;

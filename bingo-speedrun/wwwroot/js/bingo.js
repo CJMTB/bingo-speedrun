@@ -1,24 +1,30 @@
-﻿/*
- * FINAL COLOUR LIST
- * var colours = ["CC0000", "9500E0", "00BF00", "008FE8"];
- * 
- * NICE LOOKING COLOURS
- * var colours = ["3c1f55", "ff6223", "a53e5a", "fecc74"];
- * 
- * 
+﻿var username = null;
+var userColour = null;
+
+/**
+ *	{
+ *		Board: {
+ *			Cards: [ "card1", "card2", ... ],
+ *			Colours: [ ["#ABCDEF", "#ABCDEF", "#ABCDEF", "#ABCDEF"], [...], ... ]
+ *		},
+ *		RoomID: "XYZ",
+ *		Settings: {
+ *			CardsList: [ "card1", "card2", ... ]
+ *		},
+ *		Users: [
+ *			{
+ *				Key: "connectionID",
+ *				Value: {
+ *					Colour: "#ABCDEF",
+ *					Username: "username"
+ *				}
+ *			},
+ *			{ ... }
+ *		]
+ *	}
  */
 
-var board = [];
-var username = null;
-var userColour = null;
-var roomCode = null;
-
-for (var i = 0; i < 25; i++) {
-	board[i] = {
-		colours: [],
-		card: ""
-	};
-}
+var room = null; // Users not kept updated
 
 const connection = new signalR.HubConnectionBuilder()
 	.withUrl("/bingoHub")
@@ -32,21 +38,24 @@ connection.on("ReceiveBoardUpdate", function (tileID, userColour) {
 	updateBoard(tileID, userColour);
 });
 
-connection.on("ReceiveFirstJoinRoom", function (roomID, assignedColour, boardJSON, usersJSON) {
-	roomCode = roomID;
-	userColour = assignedColour;
-	board = JSON.parse(boardJSON);
-	var users = JSON.parse(usersJSON);
+connection.on("ReceiveFirstJoinRoom", function (roomJSON, assignedColour) {
+	room = JSON.parse(roomJSON);
 
-	$("#room-code").text(roomCode);
+	userColour = assignedColour;
+
+	$("#room-code").text(room.RoomID);
 
 	// remove all table rows other than header
 	$("#room-players tbody").find("tr:gt(0)").remove();
 	// add users
-	for (var i = 0; i < users.length; i++) {
-		var newRow = "<tr style='background-color: " + users[i].colour + "'><td>" + users[i].username + "</td></tr>";
+	for (var i = 0; i < room.Users.length; i++) {
+		var newRow = "<tr style='background-color: " + room.Users[i].Value.Colour + "'><td>" + room.Users[i].Value.Username + "</td></tr>";
 		$("#room-players tbody").append(newRow);
 	}
+
+	// show room settings
+	var cardsStr = room.Settings.CardsList.join("\n");
+	$("#room-cards-list").val(cardsStr);
 
 	$("#bingo-login").hide();
 	$("#bingo-login-error").hide();
@@ -62,6 +71,13 @@ connection.on("ReceiveOtherJoinRoom", function (playerUsername, playerColour) {
 	$("#room-players tbody").append(newRow);
 });
 
+connection.on("ReceiveUpdateRoomSettings", function (roomSettingsJSON) {
+	console.log(roomSettingsJSON);
+	var roomSettings = JSON.parse(roomSettingsJSON);
+	var cardsStr = roomSettings.CardsList.join("\n");
+	$("#room-cards-list").val(cardsStr);
+});
+
 // remove user from list when they leave
 connection.on("ReceiveLeaveRoom", function (playerUsername) {
 	$("#room-players tr td").each(function () {
@@ -71,7 +87,11 @@ connection.on("ReceiveLeaveRoom", function (playerUsername) {
 	});
 });
 
-
+connection.on("ReceiveResetBoard", function (boardJSON) {
+	room.Board = JSON.parse(boardJSON);
+	renderBoard();
+	textfill(30);
+});
 
 // We need an async function in order to use await, but we want this code to run immediately,
 // so we use an "immediately-executed async function"
@@ -85,6 +105,21 @@ connection.on("ReceiveLeaveRoom", function (playerUsername) {
 })();
 
 jQuery(document).ready(function ($) {
+	// pressing enter submits
+	$("#username-input").keypress(function (e) {
+		if (e.which == 13) {
+			$("#bingo-login-submit").click();
+			return false;
+		}
+	});
+
+	$("#room-code-input").keypress(function (e) {
+		if (e.which == 13) {
+			$("#bingo-login-submit").click();
+			return false;
+		}
+	});
+
 	$("#bingo-login-submit").click(function () {
 		var username = $.trim($("#username-input").val());
 		var roomID = $.trim($("#room-code-input").val());
@@ -105,7 +140,7 @@ jQuery(document).ready(function ($) {
 	$(".bingo-text").click(function () {
 		if (userColour !== "" && userColour !== null /* && roomCode !== null*/) {
 			var tileID = $(this).parent().attr('id');
-			connection.invoke("SendBoardUpdate", roomCode, tileID, userColour).catch(function (err) {
+			connection.invoke("SendBoardUpdate", room.RoomID, tileID, userColour).catch(function (err) {
 				console.error(err.toString());
 			});
 		}
@@ -114,25 +149,49 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
+	$("#room-confirm-settings").click(function () {
+		var cardsList = $("#room-cards-list").val();
+		var cardsArr = cardsList.split("\n");
+
+		if (cardsArr.length >= 25) {
+			var msg = {
+				CardsList: cardsArr
+			};
+
+			connection.invoke("SendUpdateRoomSettings", room.RoomID, JSON.stringify(msg)).catch(function (err) {
+				console.error(err.toString());
+			});
+		}
+		else {
+			alert("Not enough cards entered, 25 minimum");
+		}
+	});
+
+	$("#room-new-game").click(function () {
+		connection.invoke("SendResetBoard", room.RoomID).catch(function (err) {
+			console.error(err.toString());
+		});
+	});
+
 
 });
 
 function updateBoard(tileID, colour) {
 	var square = parseInt(tileID);
-	var index = board[square].colours.indexOf(colour);
+	var index = room.Board.Colours[square].indexOf(colour);
 	if (index > -1) {
-		board[square].colours.splice(index, 1);
+		room.Board.Colours[square].splice(index, 1);
 	}
 	else {
-		board[square].colours.push(colour);
+		room.Board.Colours[square].push(colour);
 	}
 	renderBoard();
 }
 
 function renderBoard() {
 	for (var i = 0; i < 25; i++) {
-		$("#" + i + " > .card > span").text(board[i].card);
-		setColours(i, board[i].colours);
+		$("#" + i + " > .bingo-text > span").text(room.Board.Cards[i]);
+		setColours(i, room.Board.Colours[i]);
 	}
 }
 

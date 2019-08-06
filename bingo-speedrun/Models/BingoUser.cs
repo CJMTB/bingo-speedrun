@@ -2,29 +2,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace BingoSpeedrun.Models
 {
+    [DataContract]
     public class BingoUser
     {
+        [IgnoreDataMember]
         public string ConnectionID { get; private set; }
+        [DataMember]
         public string Username { get; private set; }
-        public string HexColour { get; private set; }
+        [DataMember]
+        public string Colour { get; private set; }
 
-        // Creates user with random colour from PossibleHexColours
-        public BingoUser(string connectionID, string username)
+        public BingoUser(string connectionID, string username, string colour)
         {
             ConnectionID = connectionID;
             Username = username;
-            HexColour = BingoUtils.RandomHexColour();
-        }
-
-        public BingoUser(string connectionID, string username, string hexColour)
-        {
-            ConnectionID = connectionID;
-            Username = username;
-            HexColour = hexColour;
+            Colour = colour;
         }
     }
 }
