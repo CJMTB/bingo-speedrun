@@ -29,7 +29,7 @@ namespace BingoSpeedrun.Hubs
         public async Task SendCreateRoom(string username)
         {
             string roomID = _roomManager.CreateRoom();
-            string userColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
+            string userColour = _roomManager.AddUserToRoom(roomID, Context.ConnectionId, username);
             await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", _roomManager.RoomToJSON(roomID), userColour);
         }
 
@@ -37,7 +37,7 @@ namespace BingoSpeedrun.Hubs
         {
             try
             {
-                string userColour = _roomManager.AddToRoom(Context.ConnectionId, roomID, username);
+                string userColour = _roomManager.AddUserToRoom(roomID, Context.ConnectionId, username);
                 await Clients.Caller.SendAsync("ReceiveFirstJoinRoom", _roomManager.RoomToJSON(roomID), userColour);
 
                 Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
@@ -57,7 +57,7 @@ namespace BingoSpeedrun.Hubs
 
         public async Task SendBoardUpdate(string roomID, string tileID, string userColour)
         {
-            _roomManager.GetRoom(roomID).Board.Update(Int32.Parse(tileID), userColour);
+            _roomManager.Rooms[roomID].Board.Update(Int32.Parse(tileID), userColour);
 
             Dictionary<string, BingoUser> usersInRoom = _roomManager.GetRoomUsers(roomID);
             foreach (KeyValuePair<string, BingoUser> entry in usersInRoom)
@@ -107,9 +107,9 @@ namespace BingoSpeedrun.Hubs
                     string roomID = room.Key;
                     string username = room.Value.Users[Context.ConnectionId].Username;
 
-                    _roomManager.Rooms[roomID].RemoveUser(Context.ConnectionId);
+                    room.Value.RemoveUser(Context.ConnectionId);
 
-                    if(_roomManager.Rooms[roomID].Users.Count == 0)
+                    if(room.Value.Users.Count == 0)
                     {
                         _roomManager.Rooms.Remove(roomID);
                     }

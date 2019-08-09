@@ -16,7 +16,10 @@ namespace BingoSpeedrun.Services
 
         public BingoRoomManager() {}
         
-        // creates a room with a random ID, and returns the room ID
+        /// <summary>
+        /// Creates a room with a random three character ID, and returns its room ID.
+        /// </summary>
+        /// <returns>The ID of the newly created room.</returns>
         public string CreateRoom()
         {
             string roomID = null;
@@ -30,16 +33,48 @@ namespace BingoSpeedrun.Services
             return roomID;
         }
 
+        /// <summary>
+        /// Returns the room with the given roomID, or null if it does not exist.
+        /// </summary>
+        /// <param name="roomID"></param>
+        /// <returns>The room with the given roomID, or null if it does not exist.</returns>
         public BingoRoom GetRoom(string roomID)
         {
-            return Rooms[roomID];
+            if (Rooms.ContainsKey(roomID))
+            {
+                return Rooms[roomID];
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        public string AddToRoom(string connectionID, string roomID, string username)
+        /// <summary>
+        /// Adds a user to the room with the given ID and returns their assigned colour.
+        /// </summary>
+        /// <param name="roomID"></param>
+        /// <param name="connectionID"></param>
+        /// <param name="username"></param>
+        /// <returns>The user's assigned colour.</returns>
+        public string AddUserToRoom(string roomID, string connectionID, string username)
         {
-            return Rooms[roomID].AddUser(connectionID, username);
+            BingoRoom room = GetRoom(roomID);
+            if(room != null)
+            {
+                return room.AddUser(connectionID, username);
+            }
+            else
+            {
+                return null;
+            }
         }
 
+        /// <summary>
+        /// Removes a user with the given connectionID from the room.
+        /// </summary>
+        /// <param name="connectionID"></param>
+        /// <param name="roomID"></param>
         public void RemoveFromRoom(string connectionID, string roomID)
         {
             Rooms[roomID].RemoveUser(connectionID);
