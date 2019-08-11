@@ -1,5 +1,58 @@
 ﻿@page
 @{
-    ViewData["Title"] = "Bingo";
+    ViewData["Title"] = "About";
 }
-<h1 style="color: white; text-align: center">hi</h1>
+<div id="bingo-login" style="width: 880px; padding: 1vmin;">
+    <h1 style="color: white">About</h1>
+    <hr />
+    <p>Bingo Speedrun is a web application for collaborative bingo boards used in multiplayer races.</p>
+    <p>You can create rooms, and other players can join your room using your room code. Each room has a bingo board with a goal listed on each tile. When you complete a goal, click on the tile to mark it with your colour, and it is synchronised between all other players in the room.</p>
+    <p>The win condition is up to you. For example, you can end the game when one player gets a full line, or until a player controls the entire board.</p>
+    <p>An example board for Pokemon Red / Blue is below.</p>
+</div>
+<div id="bingo-game">
+    <div class="container" id="bingo-game-info">
+        <div id="room-code-container">Room Code: <span id="room-code">ABC</span></div>
+        <hr>
+        <table id="room-players">
+            <tbody>
+                <tr><th>Players</th></tr>
+                <tr style="background-color: #9500E0"><td>Connor</td></tr>
+                <tr style="background-color: #00BF00"><td>Heather</td></tr>
+            </tbody>
+        </table>
+        <hr>
+        <div id="buttons-container">
+            <button type="button" class="btn btn-info" id="room-new-game">New Game</button>
+            <button type="button" class="btn btn-info" id="room-toggle-settings">Settings</button>
+        </div>
+
+    </div>
+    <div id="bingo-game-grid">
+        <div id="0" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 29px;">Obtain Starmie</span></div></div>
+        <div id="1" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 30px;">Use no repels</span></div></div>
+        <div id="2" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Obtain TM 39 (Swift)</span></div></div>
+        <div id="3" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 20px;">Defeat all 12 trainers in Mt Moon</span></div></div>
+        <div id="4" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 26px;">Obtain Cloyster</span></div></div>
+        <div id="5" class="square"><div class="bingo-tile" style="background-color: rgb(149, 0, 224);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 18px;">Obtain Charmeleon</span></div></div>
+        <div id="6" class="square"><div class="bingo-tile" style="background-color: rgb(149, 0, 224);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 24px;">Defeat 7 Pikachus</span></div></div>
+        <div id="7" class="square"><div class="bingo-tile two-colours" style="background-color: rgb(0, 191, 0);"><div style="background-color: rgb(149, 0, 224);"></div><div></div></div><div class="bingo-text"><span style="font-size: 26px;">Obtain 4 Badges</span></div></div>
+        <div id="8" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 25px;">Defeat 5 Jugglers</span></div></div>
+        <div id="9" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Teach TM 49 (Tri Attack)</span></div></div>
+        <div id="10" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 20px;">Obtain Magmar or Electabuzz</span></div></div>
+        <div id="11" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 22px;">Defeat 2 Engineers</span></div></div>
+        <div id="12" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Defeat all 3 starters</span></div></div>
+        <div id="13" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 21px;">Obtain Arbok or Sandslash</span></div></div>
+        <div id="14" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 27px;">Obtain Clefable</span></div></div>
+        <div id="15" class="square"><div class="bingo-tile" style="background-color: rgb(149, 0, 224);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 26px;">Obtain Psyduck</span></div></div>
+        <div id="16" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 19px;">Obtain TM 41 (Softboiled)</span></div></div>
+        <div id="17" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Obtain Venusaur</span></div></div>
+        <div id="18" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 26px;">Defeat 3 Burglars</span></div></div>
+        <div id="19" class="square"><div class="bingo-tile two-colours" style="background-color: rgb(0, 191, 0);"><div style="background-color: rgb(149, 0, 224);"></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Obtain Master Ball</span></div></div>
+        <div id="20" class="square"><div class="bingo-tile two-colours" style="background-color: rgb(0, 191, 0);"><div style="background-color: rgb(149, 0, 224);"></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">20 pokemon owned</span></div></div>
+        <div id="21" class="square"><div class="bingo-tile" style="background-color: rgb(149, 0, 224);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 28px;">Obtain Cubone</span></div></div>
+        <div id="22" class="square"><div class="bingo-tile" style="background-color: rgb(149, 0, 224);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">Obtain 4 Rare Candies</span></div></div>
+        <div id="23" class="square"><div class="bingo-tile" style=""><div></div><div></div></div><div class="bingo-text"><span style="font-size: 30px;">Obtain Lapras</span></div></div>
+        <div id="24" class="square"><div class="bingo-tile" style="background-color: rgb(0, 191, 0);"><div></div><div></div></div><div class="bingo-text"><span style="font-size: 23px;">30 Pokemon owned</span></div></div>
+    </div>
+</div>
